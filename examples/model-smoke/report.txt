@@ -1,0 +1,24 @@
+VISIONX PRO - RESTORATION EXPERIMENT
+
+Mode: experiment
+Against the working-resolution reference; 2x results are downsampled with bicubic interpolation.
+
+Results:
+- Unprocessed baseline: 64x64; 0.0000 s; PSNR 20.395 dB; SSIM 0.5120; SSIM change +0.0000
+- SwinIR grayscale denoising: 64x64; 1.5758 s; PSNR 38.350 dB; SSIM 0.9921; SSIM change +0.4801
+- SwinIR 2x super-resolution: 128x128; 1.7111 s; PSNR 31.929 dB; SSIM 0.9576; SSIM change +0.4456
+
+Configuration:
+{
+  "kind": "noise",
+  "severity": 0.09803921568627451,
+  "seed": 42
+}
+
+Limitations:
+- A single-image experiment is not a benchmark or clinical validation.
+- Higher PSNR/SSIM does not establish diagnostic accuracy.
+- No original-resolution super-resolution ground truth is provided.
+- Timings cover the restore call; model loading is excluded when preloaded.
+
+This report describes an image-processing experiment. It contains no diagnosis or treatment recommendation.

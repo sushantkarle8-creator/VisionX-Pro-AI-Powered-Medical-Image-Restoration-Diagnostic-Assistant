@@ -1,0 +1,25 @@
+VISIONX PRO - RESTORATION EXPERIMENT
+
+Mode: experiment
+Against the working-resolution reference; 2x results are downsampled with bicubic interpolation.
+
+Results:
+- Unprocessed baseline: 256x256; 0.0001 s; PSNR 20.350 dB; SSIM 0.2421; SSIM change +0.0000
+- Non-local means denoising: 256x256; 0.0640 s; PSNR 34.371 dB; SSIM 0.9361; SSIM change +0.6940
+- Unsharp masking: 256x256; 0.0008 s; PSNR 16.386 dB; SSIM 0.1690; SSIM change -0.0731
+- Adaptive contrast (CLAHE): 256x256; 0.0075 s; PSNR 12.326 dB; SSIM 0.1599; SSIM change -0.0822
+
+Configuration:
+{
+  "kind": "noise",
+  "severity": 0.09803921568627451,
+  "seed": 42
+}
+
+Limitations:
+- A single-image experiment is not a benchmark or clinical validation.
+- Higher PSNR/SSIM does not establish diagnostic accuracy.
+- No original-resolution super-resolution ground truth is provided.
+- Timings cover the restore call; model loading is excluded when preloaded.
+
+This report describes an image-processing experiment. It contains no diagnosis or treatment recommendation.

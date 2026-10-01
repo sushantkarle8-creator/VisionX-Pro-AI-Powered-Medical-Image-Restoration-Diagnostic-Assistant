@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-01T23:06:22.757153+00:00",
+  "mode": "experiment",
+  "degradation": {
+    "kind": "noise",
+    "severity": 0.09803921568627451,
+    "seed": 42
+  },
+  "metadata": {
+    "source": "64x64 synthetic geometric target; smoke test only",
+    "models": {
+      "swinir_denoise": {
+        "url": "https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/004_grayDN_DFWB_s128w8_SwinIR-M_noise25.pth",
+        "bytes": 122879887,
+        "sha256": "b8aa38b201e79c80d6ed89c08bb68c4668f85e937120e466594de898965a1ad2",
+        "architecture_commit": "6545850fbf8df298df73d81f3e8cba638787c8bd",
+        "checksum_scope": "Locally recorded after HTTPS download; not an independent publisher signature.",
+        "device": "cpu"
+      },
+      "swinir_sr": {
+        "url": "https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x2_GAN.pth",
+        "bytes": 66974517,
+        "sha256": "f397408977a3e07eb06afb7238d453a12ef35ebab7328a54241f307860dbe342",
+        "architecture_commit": "6545850fbf8df298df73d81f3e8cba638787c8bd",
+        "checksum_scope": "Locally recorded after HTTPS download; not an independent publisher signature.",
+        "device": "cpu"
+      }
+    }
+  },
+  "results": [
+    {
+      "method": "identity",
+      "label": "Unprocessed baseline",
+      "seconds": 0.0,
+      "output_width": 64,
+      "output_height": 64,
+      "psnr_db": 20.395094091369582,
+      "ssim": 0.5119519005955931,
+      "mse": 0.009130416547700974,
+      "exact_match": false
+    },
+    {
+      "method": "swinir_denoise",
+      "label": "SwinIR grayscale denoising",
+      "seconds": 1.5758,
+      "output_width": 64,
+      "output_height": 64,
+      "psnr_db": 38.34988978374311,
+      "ssim": 0.9920648798151617,
+      "mse": 0.00014622142805193966,
+      "exact_match": false
+    },
+    {
+      "method": "swinir_sr",
+      "label": "SwinIR 2x super-resolution",
+      "seconds": 1.7111,
+      "output_width": 128,
+      "output_height": 128,
+      "psnr_db": 31.928633085211434,
+      "ssim": 0.957569972757033,
+      "mse": 0.000641411424747062,
+      "exact_match": false
+    }
+  ],
+  "evaluation": "Against the working-resolution reference; 2x results are downsampled with bicubic interpolation.",
+  "limitations": [
+    "A single-image experiment is not a benchmark or clinical validation.",
+    "Higher PSNR/SSIM does not establish diagnostic accuracy.",
+    "No original-resolution super-resolution ground truth is provided.",
+    "Timings cover the restore call; model loading is excluded when preloaded."
+  ]
+}

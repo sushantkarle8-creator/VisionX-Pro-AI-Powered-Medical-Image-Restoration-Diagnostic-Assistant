@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-01T23:11:36.608311+00:00",
+  "mode": "experiment",
+  "degradation": {
+    "kind": "noise",
+    "severity": 0.09803921568627451,
+    "seed": 42
+  },
+  "metadata": {
+    "original_size": [
+      256,
+      256
+    ],
+    "working_size": [
+      256,
+      256
+    ],
+    "conversion": "8-bit grayscale; aspect ratio preserved",
+    "source": "synthetic geometric demonstration; not medical data",
+    "models": {}
+  },
+  "results": [
+    {
+      "method": "identity",
+      "label": "Unprocessed baseline",
+      "seconds": 0.0001,
+      "output_width": 256,
+      "output_height": 256,
+      "psnr_db": 20.349646952581722,
+      "ssim": 0.2420931165215969,
+      "mse": 0.009226464255905785,
+      "exact_match": false
+    },
+    {
+      "method": "nlm",
+      "label": "Non-local means denoising",
+      "seconds": 0.064,
+      "output_width": 256,
+      "output_height": 256,
+      "psnr_db": 34.3711387182903,
+      "ssim": 0.9360819655981064,
+      "mse": 0.000365498944929871,
+      "exact_match": false
+    },
+    {
+      "method": "unsharp",
+      "label": "Unsharp masking",
+      "seconds": 0.0008,
+      "output_width": 256,
+      "output_height": 256,
+      "psnr_db": 16.38586779307764,
+      "ssim": 0.1690236122744605,
+      "mse": 0.02298334392891298,
+      "exact_match": false
+    },
+    {
+      "method": "clahe",
+      "label": "Adaptive contrast (CLAHE)",
+      "seconds": 0.0075,
+      "output_width": 256,
+      "output_height": 256,
+      "psnr_db": 12.32563341932677,
+      "ssim": 0.15988794885935587,
+      "mse": 0.058537833645344525,
+      "exact_match": false
+    }
+  ],
+  "evaluation": "Against the working-resolution reference; 2x results are downsampled with bicubic interpolation.",
+  "limitations": [
+    "A single-image experiment is not a benchmark or clinical validation.",
+    "Higher PSNR/SSIM does not establish diagnostic accuracy.",
+    "No original-resolution super-resolution ground truth is provided.",
+    "Timings cover the restore call; model loading is excluded when preloaded."
+  ]
+}

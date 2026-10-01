@@ -1,0 +1,4 @@
+method,label,seconds,output_width,output_height,psnr_db,ssim,mse,exact_match
+identity,Unprocessed baseline,0.0,64,64,20.395094091369582,0.5119519005955931,0.009130416547700974,False
+swinir_denoise,SwinIR grayscale denoising,1.5758,64,64,38.34988978374311,0.9920648798151617,0.00014622142805193966,False
+swinir_sr,SwinIR 2x super-resolution,1.7111,128,128,31.928633085211434,0.957569972757033,0.000641411424747062,False
