@@ -1,4 +1,5 @@
 """VisionX Pro: chest radiograph restoration and explainable finding analysis."""
+import os
 import hashlib
 import json
 import numpy as np
@@ -12,9 +13,14 @@ from visionx.study import analyze, sensitivity, stress_experiment
 from visionx.evidence import evidence_zip, pdf_report
 from visionx.interface import setup_style, section, compare_view, findings_panel
 
+CLOUD = os.environ.get('VISIONX_CLOUD') == '1'
+
 st.set_page_config(page_title='VisionX Pro | Chest imaging',page_icon='◈',layout='wide',initial_sidebar_state='collapsed')
 setup_style()
-st.markdown('''<div class="vx-nav"><div class="vx-brand"><span class="vx-symbol">◈</span> VISIONX <span style="font-weight:400;color:#a2ad96">PRO</span></div><span class="vx-tag">MEDICAL IMAGING / RESEARCH WORKSPACE</span><span class="vx-badge">LOCAL INFERENCE</span></div><div class="vx-hero"><div><div class="vx-tag">CHEST RADIOGRAPH INTELLIGENCE</div><h1>A clearer image.<br><span>Evidence you can inspect.</span></h1></div><div class="vx-intro">Restore chest X-rays. Explore model findings. See exactly how processing changes the prediction.<div class="vx-steps"><span>01 / RESTORE</span><span>02 / ANALYZE</span><span>03 / VERIFY</span></div></div></div>''',unsafe_allow_html=True)
+st.markdown('''<div class="vx-nav"><div class="vx-brand"><span class="vx-symbol">◈</span> VISIONX <span style="font-weight:400;color:#a2ad96">PRO</span></div><span class="vx-tag">MEDICAL IMAGING / RESEARCH WORKSPACE</span><span class="vx-badge">SERVER INFERENCE</span></div><div class="vx-hero"><div><div class="vx-tag">CHEST RADIOGRAPH INTELLIGENCE</div><h1>A clearer image.<br><span>Evidence you can inspect.</span></h1></div><div class="vx-intro">Restore chest X-rays. Explore model findings. See exactly how processing changes the prediction.<div class="vx-steps"><span>01 / RESTORE</span><span>02 / ANALYZE</span><span>03 / VERIFY</span></div></div></div>''',unsafe_allow_html=True)
+
+if CLOUD:
+    st.caption('Hosted research demo · CPU analysis · Public samples recommended. Uploaded images are processed on this cloud server. SwinIR and GPU options are available in the local version.')
 
 controls=st.columns([3,1.2,1.2])
 with controls[1].popover('Study controls',use_container_width=True):
@@ -22,13 +28,13 @@ with controls[1].popover('Study controls',use_container_width=True):
     source=st.radio('Study source',['Public sample 01','Public sample 02','Upload radiograph'])
     upload=st.file_uploader('Frontal chest X-ray',type=['png','jpg','jpeg','tif','tiff','dcm']) if source=='Upload radiograph' else None
     confirmed=st.checkbox('This is a de-identified frontal chest X-ray that I am authorized to use.') if source=='Upload radiograph' else True
-    method=st.selectbox('Restoration method',['nlm','swinir_denoise','identity','clahe','unsharp'],format_func=lambda m:METHODS[m])
-    size=st.select_slider('Working resolution',options=[224,256,384,512],value=256)
-    device=st.selectbox('Compute device',['cpu','cuda'])
+    method=st.selectbox('Restoration method',(['nlm','identity','clahe','unsharp'] if CLOUD else ['nlm','swinir_denoise','identity','clahe','unsharp']),format_func=lambda m:METHODS[m])
+    size=st.select_slider('Working resolution',options=([224,256] if CLOUD else [224,256,384,512]),value=256)
+    device=st.selectbox('Compute device',(['cpu'] if CLOUD else ['cpu','cuda']))
     simulated=st.checkbox('Controlled noise experiment',help='Use the source image as reference and add reproducible Gaussian noise. This is not scanner-calibrated noise.')
     noise=st.slider('Noise standard deviation',.0,.2,.05,.005) if simulated else 0.
     seed=st.number_input('Noise seed',min_value=0,max_value=2**32-1,value=42) if simulated else 42
-    st.caption('Frontal chest X-rays only. No CT, MRI, pediatric validation, or COVID-specific classifier. Uploaded scans remain on this computer.')
+    st.caption('Frontal chest X-rays only. No CT, MRI, pediatric validation, or COVID-specific classifier. Images are processed on the machine hosting this app. On the hosted demo, uploads are sent to the cloud server; use public or fully de-identified research images.')
 
 raw=b''; image=None; metadata={}
 try:
@@ -67,7 +73,7 @@ if run_clicked:
 study=st.session_state.get('study')
 elapsed=f"{study['record']['classification_seconds']:.2f}s" if study else 'READY' if ready else 'SETUP'
 shift=f"{study['record']['max_absolute_score_change']:.3f}" if study else '—'
-st.markdown(f'''<div class="vx-stats"><div class="vx-stat"><small>CHEST FINDING OUTPUTS</small><b>18</b></div><div class="vx-stat"><small>PAIRED CLASSIFICATION</small><b>{elapsed}</b></div><div class="vx-stat"><small>MAXIMUM SCORE SHIFT</small><b>{shift}</b></div><div class="vx-stat"><small>IMAGE PROCESSING</small><b>On-device</b></div></div>''',unsafe_allow_html=True)
+st.markdown(f'''<div class="vx-stats"><div class="vx-stat"><small>CHEST FINDING OUTPUTS</small><b>18</b></div><div class="vx-stat"><small>PAIRED CLASSIFICATION</small><b>{elapsed}</b></div><div class="vx-stat"><small>MAXIMUM SCORE SHIFT</small><b>{shift}</b></div><div class="vx-stat"><small>IMAGE PROCESSING</small><b>Server-side</b></div></div>''',unsafe_allow_html=True)
 workspace,lab,model_card=st.tabs(['Imaging workspace','Restoration research','Model & evidence'])
 with workspace:
     viewer,findings=st.columns([1.85,1],gap='large')
@@ -128,7 +134,7 @@ with workspace:
 with lab:
     section('Does a cleaner image preserve the model response?','PAIRED EXPERIMENT')
     st.write('Use the selected source as reference. Add three noise levels, repeat with three fixed seeds, and compare restoration methods on exactly the same inputs.')
-    experiment_methods=st.multiselect('Methods to compare',['nlm','unsharp','clahe','swinir_denoise'],default=['nlm','unsharp'],format_func=lambda m:METHODS[m])
+    experiment_methods=st.multiselect('Methods to compare',(['nlm','unsharp','clahe'] if CLOUD else ['nlm','unsharp','clahe','swinir_denoise']),default=['nlm','unsharp'],format_func=lambda m:METHODS[m])
     stress_fingerprint=fingerprint+json.dumps(experiment_methods)
     if st.session_state.get('stress_fingerprint')!=stress_fingerprint:
         st.session_state.pop('stress',None)
@@ -162,7 +168,7 @@ with model_card:
 
 **Restoration:** fast non-local means, or an upstream SwinIR transformer trained for generic grayscale denoising. Medical-domain validation is still required. The original remains available.
 
-**Privacy:** processing is local; no cloud image upload. Uploads stay in session memory. Exported pixels may still contain burned-in identifiers.
+**Privacy:** images are processed on the app server (your computer for a local run, the hosting provider for a cloud run). Uploaded images and results are held in server session memory, not deliberately saved by the app to disk or sent to an external inference API. Exported pixels may still contain burned-in identifiers.
 
 **Demo data:** two public NIH ChestX-ray14 images distributed with TorchXRayVision. They may overlap training data and cannot establish generalization.
 
@@ -171,5 +177,5 @@ with model_card:
 [TorchXRayVision](https://mlmed.org/torchxrayvision/) · [CAM](https://arxiv.org/abs/1512.04150) · [SwinIR](https://github.com/JingyunLiang/SwinIR) · [Reconstruction instability](https://pmc.ncbi.nlm.nih.gov/articles/PMC7720232/)''')
     if study:
         with st.expander('Exact run configuration and model hashes'): st.json(study['record'])
-st.markdown('<div class="vx-footer"><span>VISIONX PRO / CHEST IMAGING RESEARCH</span><span>PRETRAINED MODELS · MEASURED OUTPUTS · LOCAL PROCESSING</span></div>',unsafe_allow_html=True)
+st.markdown('<div class="vx-footer"><span>VISIONX PRO / CHEST IMAGING RESEARCH</span><span>PRETRAINED MODELS · MEASURED OUTPUTS · SERVER PROCESSING</span></div>',unsafe_allow_html=True)
 

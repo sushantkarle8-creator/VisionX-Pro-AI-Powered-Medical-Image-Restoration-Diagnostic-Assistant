@@ -6,7 +6,7 @@
 
 VisionX keeps the original chest radiograph visible, restores a second copy, and runs a frozen
 DenseNet-121 on both. Inspect 18 finding scores, class activation maps, sensitivity to small
-perturbations, and the effect of restoration on the model response. All image processing is local.
+perturbations, and the effect of restoration on the model response. Image processing runs on the app server: locally on your computer, or on the provider when hosted.
 
 This is a research prototype, not a clinical diagnostic or triage device. Scores are uncalibrated
 model outputs, not disease probabilities. It does not claim clinical accuracy or COVID detection.
@@ -115,3 +115,23 @@ image-domain detection and clinical decision thresholds are not implemented.
 
 See THIRD_PARTY_NOTICES.md for attribution. The interface takes visual inspiration from reactor.inc
 (near-black surfaces, ivory accents and large typography); no Reactor assets or branding are used.
+
+## Streamlit Community Cloud
+
+Deploy the existing repository, branch `main`, with entry point **`cloud/app.py`** and
+Python **3.12** in Advanced settings. Community Cloud selects `cloud/requirements.txt`
+next to that entry point; it includes the base dependencies and Linux CPU PyTorch wheels.
+No API keys or secrets are required. Do not select the root `app.py` for this deployment.
+
+The entry point downloads the hash-pinned upstream chest checkpoint, converts and verifies
+it on first startup, and caches successful initialization across sessions. Sleep/restarts may
+require another download. A failed setup displays a retry action instead of fabricated scores.
+
+The hosted demo offers NLM and classical restoration, CPU analysis, and 224/256-pixel working
+images. SwinIR/GPU remain available in the local app. Hosting memory and concurrency limits
+still apply; multi-user load and provider memory limits have not been benchmarked.
+
+Uploads are transmitted to the hosting server. The app keeps uploads/results in session memory
+and does not intentionally save them to disk. This is a public research demo, not a clinical
+service. Prefer the bundled public examples. Model weights are public and are the only items
+downloaded automatically; user images are not sent to external inference APIs.
