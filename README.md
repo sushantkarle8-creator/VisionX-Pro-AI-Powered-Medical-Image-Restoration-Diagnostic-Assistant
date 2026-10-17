@@ -1,157 +1,117 @@
 # VisionX Pro
 
-A runnable image-restoration research app with reproducible degradation experiments,
-pretrained SwinIR inference, classical baselines, and measured reports.
+**Chest X-ray restoration and explainable finding analysis.**
 
-![VisionX interface](docs/preview.jpg)
+![VisionX Pro workspace](docs/workspace.jpg)
 
-See [validation notes](VALIDATION.md) for actual tests and example measurements.
+VisionX keeps the original chest radiograph visible, restores a second copy, and runs a frozen
+DenseNet-121 on both. Inspect 18 finding scores, class activation maps, sensitivity to small
+perturbations, and the effect of restoration on the model response. All image processing is local.
 
-## Features
+This is a research prototype, not a clinical diagnostic or triage device. Scores are uncalibrated
+model outputs, not disease probabilities. It does not claim clinical accuracy or COVID detection.
 
-- Restore an uploaded image, or run a controlled degradation experiment.
-- Compare the unprocessed baseline, non-local means, unsharp masking, CLAHE, and SwinIR.
-- Use separate pretrained SwinIR checkpoints for grayscale denoising and 2x super-resolution.
-- Measure PSNR, SSIM, MSE, and processing time when a clean reference exists.
-- Export images, CSV, JSON configuration/metrics, and a text report in one ZIP.
-- Optionally request an experimental Gemini image-quality description after authorizing image transmission.
+## Run locally
 
-This is **not a diagnostic system**. There is no disease classifier, clinical validation,
-medical fine-tuning, or claim of diagnostic accuracy. The demo is a geometric test image.
-SwinIR is pretrained upstream on general image data. Restoration can alter or invent details.
+Python 3.12 is recommended. Create and activate a virtual environment, then run:
 
-## Quick start (Python 3.12)
-
-From this directory:
-
-~~~text
-python -m venv .venv
-~~~
-
-Activate with `.venv\Scripts\Activate.ps1` on Windows PowerShell or
-`source .venv/bin/activate` on macOS/Linux, then:
-
-~~~text
-python -m pip install -r requirements.txt
+```text
+python -m pip install -r requirements-clinical.txt
+python setup_chest.py
 python -m streamlit run app.py
-~~~
+```
 
-Classical methods and the demo need no model downloads, GPU, API credentials, or external AI requests.
-If Streamlit asks for an email, you can leave it blank. The launch configuration binds to localhost.
+Open http://127.0.0.1:8501. Choose a public sample, press **Analyze study**, then explore
+**Class activation**, **Difference map**, and **Run sensitivity check**. Study controls opens
+image selection, restoration method, resolution, device, and controlled noise experiments.
 
-## Enable pretrained SwinIR
+For neural restoration, download the separate upstream SwinIR model once:
 
-~~~text
-python -m pip install -r requirements-models.txt
-python download_models.py --model all
-~~~
+```text
+python download_models.py --model swinir_denoise
+```
 
-Downloads: approximately 123 MB for denoising and 67 MB for 2x SR.
-Select SwinIR after installation. CPU works but can be slow.
-For CUDA, use the official PyTorch installation instructions for a compatible
-PyTorch 2.7.1 / torchvision 0.22.1 build and your driver.
+Non-local means is the fast default. SwinIR is optional and slower on CPU. Missing models produce
+an actionable setup message; the app never substitutes synthetic scores. GPU requires a compatible
+PyTorch installation. Weights stay local and are excluded from Git.
 
-Inference uses overlapping 128-pixel tiles to limit memory. Overlap is averaged;
-results can differ from whole-image inference. The architecture is vendored at a fixed commit.
-Weights are loaded strictly with weights_only=True. The downloader uses HTTPS, a temporary file,
-size checks, and a recorded SHA-256. This detects later corruption; it is not a publisher signature.
-Weights and credentials are ignored by Git.
+## What is implemented
 
-## Command-line examples
+- **Finding analysis:** frozen TorchXRayVision `densenet121-res224-all`, 18 outputs; original and
+  restored scans are processed in the same batch. Raw sigmoid outputs are displayed, without
+  upstream operating-point normalization or clinical decision thresholds.
+- **Explainability:** exact class activation maps for the global-average-pooling/linear head.
+  Signed CAM spatial means equal logits minus bias. Only positive contributions are visualized;
+  the two maps share a display scale. Native 7 x 7 maps are not lesion segmentations.
+- **Restoration:** NLM, SwinIR grayscale denoising, identity, CLAHE, and unsharp baselines.
+- **Input:** PNG/JPEG/8-bit TIFF, plus single-frame uncompressed DX/CR grayscale DICOM.
+  DICOM applies modality LUT, VOI LUT/window, valid-pixel normalization and MONOCHROME1 inversion.
+  Unsupported modality, known lateral projection, non-chest body part and multi-frame inputs are rejected.
+  Raster modality cannot be automatically verified; uploaded studies require user confirmation.
+- **Paired research:** 3 Gaussian-noise levels x 3 seeds, always with an unprocessed baseline;
+  SSIM/PSNR and drift from the reference model response. The supplied image is a reference,
+  not necessarily a pristine scan. Single-image seed variation is not population uncertainty.
+- **Sensitivity:** unchanged input, brightness +/-3%, and two independent noise perturbations
+  at sigma 0.01. Score ranges are sensitivity measurements, not calibrated confidence intervals.
+- **Evidence:** PDF, JSON, CSV and image export with preprocessing, timing, hashes and limitations.
+- **Efficiency:** cached frozen models, bounded CPU threads, inference mode, batched classification,
+  and CAM without additional backward passes. Interactive image comparison runs in the browser
+  without rerunning inference. Uploaded-image results stay in session state, not a global cache.
 
-~~~text
-python -m visionx.cli --demo --methods nlm unsharp clahe --output runs/demo.zip
-python -m visionx.cli --input example.png --mode restore --methods nlm --output runs/restored.zip
-python -m visionx.cli --input example.png --mode experiment --degradation noise --severity 0.0980392157 --seed 42 --methods swinir_denoise nlm --output runs/comparison.zip
-python -m visionx.cli --input example.png --mode restore --methods swinir_sr --device cpu --output runs/super-resolution.zip
-~~~
+## Model input and scope
 
-Input paths are local; output paths are explicit. Use --weights DIRECTORY for another model folder.
+Working images preserve aspect ratio. Classification then follows the upstream center-square crop,
+224 x 224 resize and [-1024,1024] intensity normalization. The exact crop coordinates are exported;
+peripheral anatomy may be excluded. The classifier supports chest radiographs only. No CT, MRI,
+pediatric validation or COVID-specific classifier is provided. Generic SwinIR weights are not
+medically fine-tuned. A cleaner image can change, suppress, or invent relevant-looking detail.
 
-## Evaluation
+Two public NIH ChestX-ray14 examples are included with source URLs, transformation records and
+SHA-256 hashes in assets/provenance.json. They may overlap model training data. They are demonstration
+cases, not an independent test set. No accuracy, sensitivity, specificity or AUROC is inferred from them.
 
-A controlled experiment treats the resized uploaded image as its reference, applies one
-selected degradation, and compares all selected methods on that same input.
-The unprocessed baseline is always included, so deterioration is visible.
+## Reproducibility and security
 
-- PSNR uses data_range=1. An exact match has infinite PSNR, encoded as null plus exact_match=true.
-- SSIM uses single-channel [0, 1] images at the working resolution.
-- 2x outputs are bicubically downsampled to reference size before metrics. This measures
-  reconstruction at the working resolution, not actual high-resolution detail recovery.
-- Direct restoration has no reference: no PSNR or SSIM is manufactured.
-- Timings cover the restore call and CPU output transfer; model loading is excluded when preloaded.
-  Single-run timings are not throughput benchmarks.
-- Noise uses a local seeded generator. GPU outputs can vary across hardware/software.
-- A single synthetic example is not a benchmark or clinical validation. Higher pixel similarity
-  does not establish preserved pathology or diagnostic accuracy.
+The old official XRV checkpoint is a serialized model. setup_chest.py verifies its fixed reviewed
+SHA-256 before conversion and uses an explicit class allowlist. It converts the checkpoint into
+plain state dictionaries. Runtime inference uses weights_only=True, strict loading and checksums.
+The checksum pins these release bytes; it is not an independently published signature.
 
-Severity is [0, 1]: noise standard deviation = severity; Gaussian sigma = 3 x severity;
-horizontal motion kernel = 2 x max(1, round(7 x severity)) + 1 for nonzero severity;
-contrast slope = 1 - severity. Zero severity is identity for every corruption.
-These are simple synthetic corruptions, not calibrated scanner models.
+No external image upload or language-model-generated clinical narrative is used in the main app.
+Identifying DICOM header fields and upload filenames are excluded from reports. Burned-in identifiers
+may remain in pixels; exports are not guaranteed anonymized. Do not expose this local app as an
+unauthenticated public patient-data service.
 
-## Input handling
+## Verify
 
-PNG, JPEG, and single-frame 8-bit TIFF up to 10 MB / 16 megapixels are supported.
-EXIF orientation is applied, transparency is composited over white, and images become grayscale.
-Maximum working size preserves aspect ratio. Raw 16-bit/float data, DICOM, and multi-frame
-images are explicitly rejected. Export an appropriate 8-bit preview outside this app if needed.
-Exported PNGs omit original metadata; visible burned-in identifiers can remain.
-
-## Optional Gemini review
-
-Enter a currently available image-capable Gemini model ID and API key in the app, or set
-GEMINI_MODEL and GEMINI_API_KEY in your environment. No retired model is hard-coded.
-
-A checkbox and request button authorize sending the input and selected processed image to Google.
-Ordinary processing and exports stay local. The prompt asks about visual quality/artifacts,
-not diagnosis or treatment. Output is unvalidated AI commentary and excluded from measured reports.
-Incomplete/blocked responses are rejected; API failure preserves local results.
-API keys are sent in a header and never written to reports. Live access requires your own credentials.
-API behavior is tested using mocked responses.
-
-## Structure
-
-~~~text
-app.py                   Streamlit interface
-download_models.py       Explicit, atomic upstream checkpoint downloader
-visionx/images.py        Input validation, resizing, encoding, synthetic target
-visionx/processing.py    Degradation, baselines, metrics, experiment runner
-visionx/models.py        Pretrained loading, device selection, tiled inference
-visionx/gemini.py        Opt-in external qualitative review
-visionx/reporting.py     Reports and ZIP export
-visionx/cli.py           Command-line interface
-visionx/vendor/          Pinned SwinIR architecture and license
-tests/                   Processing, export, failure-handling, app tests
-~~~
-
-## Tests
-
-~~~text
+```text
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
-~~~
+python scripts/validate_chest.py
+```
 
-Default tests need neither model weights nor external AI calls.
-The GitHub Actions workflow runs the suite on Python 3.12.
+The unit suite runs without downloaded weights. The last command requires both chest and SwinIR
+weights and saves real CPU inference examples in examples/chest-analysis. See VALIDATION.md.
 
-## What changed
+The prior general image-restoration app remains available as `streamlit run restoration_app.py`,
+including its optional Gemini quality-only review. The original restoration CLI is preserved.
 
-Removed Colab-only commands/paths, random-image fallback after invalid uploads,
-hard-coded clinical benefits, automatic diagnosis/treatment prompts, fixed preference
-for the noise result, startup downloads, and report truncation.
+## Research contribution and limitations
 
-Added the app/CLI, separate model tasks, input validation, seeded experiments,
-reference-based metrics, baseline comparisons, output bundles, dependency versions,
-pinned architecture, tests, and documentation.
+This project's contribution is the paired restoration/analysis workflow, evidence visualization,
+reproducible stress experiments and exportable provenance. It does not introduce a new neural
+architecture, train the pretrained weights, or establish medical-device efficacy.
 
-## Accurate portfolio description
+The next defensible research step is patient-disjoint external evaluation with AUROC/AUPRC,
+calibration, subgroup analysis, and expert review of detail preservation. Uncertainty calibration,
+image-domain detection and clinical decision thresholds are not implemented.
 
-"Developed an image-restoration prototype integrating pretrained SwinIR denoising and
-super-resolution with classical baselines, reproducible degradation experiments, PSNR/SSIM
-evaluation, and a Streamlit interface with downloadable reports."
+## Sources
 
-Use this description after you understand the revised implementation. Do not claim model
-training, EfficientNet/U-Net++, disease-classification accuracy, or clinical validation.
-See THIRD_PARTY_NOTICES.md for upstream attribution.
+- TorchXRayVision: https://mlmed.org/torchxrayvision/ ; source commit 4f9c7753880a391273e051f3857bce5089dfade5
+- Class activation mapping: https://arxiv.org/abs/1512.04150
+- SwinIR: https://github.com/JingyunLiang/SwinIR
+- Reconstruction instability: https://pmc.ncbi.nlm.nih.gov/articles/PMC7720232/
 
+See THIRD_PARTY_NOTICES.md for attribution. The interface takes visual inspiration from reactor.inc
+(near-black surfaces, ivory accents and large typography); no Reactor assets or branding are used.

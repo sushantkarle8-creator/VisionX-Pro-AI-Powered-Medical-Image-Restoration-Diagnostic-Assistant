@@ -1,0 +1,20 @@
+[
+  {
+    "file": "00000001_000.png",
+    "source_url": "https://raw.githubusercontent.com/mlmed/torchxrayvision/4f9c7753880a391273e051f3857bce5089dfade5/tests/00000001_000.png",
+    "original_sha256": "c8cbe59e6b9b186060dc68e63965658fa6b5b3ada6648d25c189b8b69b43cd4c",
+    "dataset": "NIH ChestX-ray14",
+    "scope": "Public upstream demonstration image. May overlap model training data. No held-out accuracy claim.",
+    "packaged_sha256": "f7cdc94a3efd105ccc41bdc5136f164bf89274c57b02039e7b7adc26a6f25c79",
+    "transform": "8-bit grayscale; aspect-preserving PIL thumbnail, maximum side 512"
+  },
+  {
+    "file": "00027426_000.png",
+    "source_url": "https://raw.githubusercontent.com/mlmed/torchxrayvision/4f9c7753880a391273e051f3857bce5089dfade5/tests/00027426_000.png",
+    "original_sha256": "c03ad7e574b14cf8442e61f9a4e849997b5e09f645ece069b714e5d4c5d8a2c2",
+    "dataset": "NIH ChestX-ray14",
+    "scope": "Public upstream demonstration image. May overlap model training data. No held-out accuracy claim.",
+    "packaged_sha256": "f9341ccc702dbbd0a9187047b6fbdae778733f6b1f2f343c44c31aee3832020e",
+    "transform": "8-bit grayscale; aspect-preserving PIL thumbnail, maximum side 512"
+  }
+]

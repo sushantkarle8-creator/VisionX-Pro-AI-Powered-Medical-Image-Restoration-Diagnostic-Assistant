@@ -43,3 +43,28 @@ No medical dataset, external clinical review, disease labels, model training, GP
 or live Gemini validation was performed. The upstream architecture produces deprecation warnings
 for an older timm import and torch.meshgrid signature; inference succeeded with the pinned versions.
 
+
+## Chest imaging workspace (v3, 2026-10-16)
+
+- 40 automated tests passed. Includes exact CAM/linear-head identity, input normalization,
+  paired experiments, deterministic seeds, DICOM inversion/privacy/scope rejection,
+  evidence exports and UI stale-result invalidation. Unit classifier tests use an explicit fake.
+- Real pretrained DenseNet-121 weights loaded strictly. Both public samples are available;
+  the recorded controlled experiment uses NIH example 00000001_000 at 256 pixels.
+- Real CPU test, Gaussian sigma 0.05, seed 42: NLM SSIM 0.53743 -> 0.90833;
+  PSNR 26.1223 -> 34.5621 dB. Mean classifier drift from the source response
+  0.17773 -> 0.01458. SwinIR drift was 0.02527 on the same corruption.
+- NLM restoration took 0.072 s, three-image classification 0.607 s, SwinIR restoration
+  35.185 s in this recorded run. Model loading was excluded. These timings are hardware-
+  and workload-specific; SwinIR is not advertised as real-time on CPU.
+- A 27-row paired sweep (3 noise levels x 3 seeds x identity/NLM/unsharp) was executed.
+  Exact results are in examples/chest-analysis/paired-experiment.json.
+- Five-variant sensitivity, the 18-output score vector, provenance and PDF export ran
+  against the real model. No Gemini or external image service was used.
+
+These are pipeline demonstrations on one public source image, not external clinical validation.
+The classifier's original training set may contain these examples. No disease accuracy is claimed.
+Medical restoration training, probability calibration, GPU validation and radiologist review
+have not been performed. The brighter image or more stable prediction is not necessarily correct.
+
+Architecture parity: compared the integrated DenseNet with the four original upstream class definitions, identical state dict and preprocessing. Maximum absolute sigmoid-output difference: 0.0.

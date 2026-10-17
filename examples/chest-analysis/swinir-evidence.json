@@ -1,0 +1,214 @@
+{
+  "record": {
+    "schema_version": "3.0",
+    "created_utc": "2026-10-16T23:33:05.229504+00:00",
+    "input_sha256": "05ad969342cb2e0d334f21c75a70bc9511529bfd1a3025149df2202445604e0d",
+    "hash_scope": "float32 working-resolution grayscale pixels before optional synthetic noise",
+    "method": "swinir_denoise",
+    "model": "torchxrayvision/densenet121-res224-all",
+    "model_provenance": {
+      "model": "torchxrayvision/densenet121-res224-all",
+      "url": "https://github.com/mlmed/torchxrayvision/releases/download/v1/nih-pc-chex-mimic_ch-google-openi-kaggle-densenet121-d121-tw-lr001-rot45-tr15-sc15-seed0-best.pt",
+      "upstream_sha256": "56524913dd16a906422e8d8b66a7a5c46be1d82eb7ac012d8103776f1aa68899",
+      "architecture_commit": "4f9c7753880a391273e051f3857bce5089dfade5",
+      "sha256": "ecb3972de115db9185fe91fb612e93bf13e974c712de5d6b445e9e1e57b3998d",
+      "training": "Upstream pretrained model; no VisionX training or local calibration",
+      "score_transform": "sigmoid(logits); upstream operating-point normalization is NOT applied"
+    },
+    "metadata": {},
+    "synthetic_noise_sigma": 0.05,
+    "seed": 42,
+    "restoration_seconds": 35.18495470000198,
+    "classification_seconds": 0.5637628999975277,
+    "timing_scope": "warm-capable calls; model load excluded; includes CPU output transfer",
+    "device": "cpu",
+    "mean_absolute_score_change": 0.18729326128959656,
+    "max_absolute_score_change": 0.6068605780601501,
+    "largest_change_finding": "Lung Opacity",
+    "model_crops": [
+      {
+        "left": 0,
+        "top": 0,
+        "side": 256,
+        "source_shape": [
+          256,
+          256
+        ]
+      },
+      {
+        "left": 0,
+        "top": 0,
+        "side": 256,
+        "source_shape": [
+          256,
+          256
+        ]
+      },
+      {
+        "left": 0,
+        "top": 0,
+        "side": 256,
+        "source_shape": [
+          256,
+          256
+        ]
+      }
+    ],
+    "score_definition": "Independent sigmoid model outputs, not calibrated disease probabilities",
+    "limitations": [
+      "Research prototype; not a clinical diagnosis or triage system.",
+      "No local training, clinical validation, or decision threshold calibration.",
+      "CAMs are coarse class-contribution maps, not lesion segmentations.",
+      "Public demo cases are not held-out test data; no accuracy is inferred."
+    ],
+    "reference_metrics": {
+      "input": {
+        "psnr_db": 26.12228748519078,
+        "ssim": 0.5374298215973973,
+        "mse": 0.0024421439034922124,
+        "exact_match": false
+      },
+      "restored": {
+        "psnr_db": 33.91303694761149,
+        "ssim": 0.8937865080224275,
+        "mse": 0.0004061592092255601,
+        "exact_match": false
+      }
+    },
+    "reference_score_drift": {
+      "input": 0.1777333915233612,
+      "restored": 0.025267917662858963
+    }
+  },
+  "findings": [
+    {
+      "finding": "Atelectasis",
+      "input_score": 0.2865121066570282,
+      "restored_score": 0.05489860475063324,
+      "change": -0.23161350190639496
+    },
+    {
+      "finding": "Consolidation",
+      "input_score": 0.17722828686237335,
+      "restored_score": 0.012835458852350712,
+      "change": -0.16439282894134521
+    },
+    {
+      "finding": "Infiltration",
+      "input_score": 0.07343126833438873,
+      "restored_score": 0.08691994845867157,
+      "change": 0.013488680124282837
+    },
+    {
+      "finding": "Pneumothorax",
+      "input_score": 0.45884349942207336,
+      "restored_score": 0.0054071820341050625,
+      "change": -0.45343631505966187
+    },
+    {
+      "finding": "Edema",
+      "input_score": 0.5278674960136414,
+      "restored_score": 0.0019065430387854576,
+      "change": -0.5259609818458557
+    },
+    {
+      "finding": "Emphysema",
+      "input_score": 0.002996930619701743,
+      "restored_score": 0.010731901973485947,
+      "change": 0.00773497112095356
+    },
+    {
+      "finding": "Fibrosis",
+      "input_score": 0.03504355624318123,
+      "restored_score": 0.05201583728194237,
+      "change": 0.01697228103876114
+    },
+    {
+      "finding": "Effusion",
+      "input_score": 0.4165092408657074,
+      "restored_score": 0.059411365538835526,
+      "change": -0.357097864151001
+    },
+    {
+      "finding": "Pneumonia",
+      "input_score": 0.17569813132286072,
+      "restored_score": 0.0014455120544880629,
+      "change": -0.17425261437892914
+    },
+    {
+      "finding": "Pleural Thickening",
+      "input_score": 0.009856810793280602,
+      "restored_score": 0.03695690259337425,
+      "change": 0.02710009180009365
+    },
+    {
+      "finding": "Cardiomegaly",
+      "input_score": 0.38502272963523865,
+      "restored_score": 0.09670398384332657,
+      "change": -0.2883187532424927
+    },
+    {
+      "finding": "Nodule",
+      "input_score": 0.0674305409193039,
+      "restored_score": 0.02442447654902935,
+      "change": -0.043006062507629395
+    },
+    {
+      "finding": "Mass",
+      "input_score": 0.021151361986994743,
+      "restored_score": 0.010440877638757229,
+      "change": -0.010710484348237514
+    },
+    {
+      "finding": "Hernia",
+      "input_score": 0.0017062657279893756,
+      "restored_score": 0.001667182194069028,
+      "change": -3.908353392034769e-05
+    },
+    {
+      "finding": "Lung Lesion",
+      "input_score": 0.1866094022989273,
+      "restored_score": 0.01359557919204235,
+      "change": -0.1730138212442398
+    },
+    {
+      "finding": "Fracture",
+      "input_score": 0.269446462392807,
+      "restored_score": 0.020787697285413742,
+      "change": -0.24865876138210297
+    },
+    {
+      "finding": "Lung Opacity",
+      "input_score": 0.8028439283370972,
+      "restored_score": 0.19598335027694702,
+      "change": -0.6068605780601501
+    },
+    {
+      "finding": "Enlarged Cardiomediastinum",
+      "input_score": 0.07978388667106628,
+      "restored_score": 0.0511629655957222,
+      "change": -0.028620921075344086
+    }
+  ],
+  "sensitivity": null,
+  "reference_scores": [
+    0.0856279730796814,
+    0.024775430560112,
+    0.13819804787635803,
+    0.00632353825494647,
+    0.010621699504554272,
+    0.008794492110610008,
+    0.08832305669784546,
+    0.08401185274124146,
+    0.019758882001042366,
+    0.046875689178705215,
+    0.2785649597644806,
+    0.04186190664768219,
+    0.01606029085814953,
+    0.0010915981838479638,
+    0.02474740892648697,
+    0.021015968173742294,
+    0.15841948986053467,
+    0.045434072613716125
+  ]
+}
